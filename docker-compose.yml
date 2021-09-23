@@ -1,50 +1,21 @@
-version: '3.8'
+FROM gitpod/workspace-full
 
-services:
-  elasticsearch:
-    image: elasticsearch:7.8.0
-    container_name: es
-    environment:
-      discovery.type: single-node
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
-    networks:
-      - elastic
-  logstash:
-    image: logstash:7.8.0
-    container_name: log
-    environment:
-      discovery.seed_hosts: logstash
-      LS_JAVA_OPTS: "-Xms512m -Xmx512m"
-    volumes:
-      - ./logstash/pipeline/logstash-nginx.config:/usr/share/logstash/pipeline/logstash-nginx.config
-      - ./logstash/nginx.log:/home/nginx.log
-    ports:
-      - "5000:5000/tcp"
-      - "5000:5000/udp"
-      - "5044:5044"
-      - "9600:9600"
-    depends_on:
-      - elasticsearch
-    networks:
-      - elastic
-    command: logstash -f /usr/share/logstash/pipeline/logstash-nginx.config
-  kibana:
-    image: kibana:7.8.0
-    container_name: kib
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    networks:
-      - elastic
-networks:
-  elastic:
-    driver: bridge
+LABEL maintainer="giridharsalana@gmail.com"
+
+# Install custom tools, runtime, etc.
+RUN sudo apt-get update -y && sudo apt-get upgrade -y && \
+    sudo apt-get install --quiet --yes fish
+    
+# Apply user-specific settings
+
+RUN mkdir -p /home/gitpod/.config/fish/
+
+RUN  echo "function c\n    clear\nend" > /home/gitpod/.config/fish/config.fish
+
+RUN sudo chsh -s /usr/bin/fish
+
+ENV SHELL /usr/bin/fish
+
+ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8
+
+ENTRYPOINT [ "fish" ]
