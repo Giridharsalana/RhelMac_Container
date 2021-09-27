@@ -1,21 +1,13 @@
-FROM gitpod/workspace-full
-
-LABEL maintainer="giridharsalana@gmail.com"
-
-# Install custom tools, runtime, etc.
-RUN sudo apt-get update -y && sudo apt-get upgrade -y && \
-    sudo apt-get install --quiet --yes fish
-    
-# Apply user-specific settings
-
-RUN mkdir -p /home/gitpod/.config/fish/
-
-RUN  echo "function c\n    clear\nend" > /home/gitpod/.config/fish/config.fish
-
-RUN sudo chsh -s /usr/bin/fish
-
-ENV SHELL /usr/bin/fish
-
-ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8
-
-ENTRYPOINT [ "fish" ]
+FROM centos:7
+ENV container docker
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
